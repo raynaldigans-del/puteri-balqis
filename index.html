@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untuk Puteri Balqis</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: radial-gradient(circle, #1a0a1a, #000); font-family: 'Segoe UI', sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        .ui-overlay {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            pointer-events: none;
+            text-shadow: 0 0 10px #ff4d94;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-overlay">Sentuhan kasih untukmu...</div>
+    <div id="canvas-container"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+
+        let scene, camera, renderer, textMesh, particles;
+
+        init();
+        animate();
+
+        function init() {
+            // 1. Scene & Camera
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 15;
+
+            // 2. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // 3. Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xff4d94, 2);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            // 4. Load Font & Create 3D Text
+            const loader = new FontLoader();
+            // Menggunakan font JSON gratis dari library Three.js
+            loader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+                const geometry = new TextGeometry('I Love You\nPuteri Balqis', {
+                    font: font,
+                    size: 1.5,
+                    height: 0.5,
+                    curveSegments: 12,
+                    bevelEnabled: true,
+                    bevelThickness: 0.1,
+                    bevelSize: 0.1,
+                });
+                
+                geometry.center();
+
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: 0xff4d94, 
+                    specular: 0xffffff,
+                    shininess: 100 
+                });
+                
+                textMesh = new THREE.Mesh(geometry, material);
+                scene.add(textMesh);
+            });
+
+            // 5. Particles (Background Bintang/Hati)
+            const partGeo = new THREE.BufferGeometry();
+            const partCount = 1000;
+            const posArray = new Float32Array(partCount * 3);
+
+            for(let i=0; i < partCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 50;
+            }
+
+            partGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const partMat = new THREE.PointsMaterial({ size: 0.05, color: 0xffffff });
+            particles = new THREE.Points(partGeo, partMat);
+            scene.add(particles);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (textMesh) {
+                // Animasi mengambang & rotasi halus
+                textMesh.rotation.y += 0.005;
+                textMesh.position.y = Math.sin(Date.now() * 0.002) * 0.5;
+            }
+
+            particles.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
