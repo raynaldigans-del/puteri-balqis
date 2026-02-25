@@ -2,29 +2,31 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Untuk Puteri Balqis</title>
+    <title>I Love You Puteri Balqis - 3D Animation</title>
     <style>
-        body { margin: 0; overflow: hidden; background: radial-gradient(circle, #1a0a1a, #000); font-family: 'Segoe UI', sans-serif; }
-        #canvas-container { width: 100vw; height: 100vh; }
-        .ui-overlay {
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a0b1c; /* Warna ungu gelap romantis */
+            font-family: sans-serif;
+        }
+        #loading {
             position: absolute;
-            bottom: 30px;
-            width: 100%;
-            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: white;
+            font-size: 24px;
             pointer-events: none;
-            text-shadow: 0 0 10px #ff4d94;
-            letter-spacing: 2px;
-            font-weight: 300;
+            transition: opacity 0.5s;
         }
     </style>
 </head>
 <body>
 
-    <div class="ui-overlay">Sentuhan kasih untukmu...</div>
-    <div id="canvas-container"></div>
+    <div id="loading">Memuat Cinta...</div>
 
+    <!-- Menggunakan Import Map untuk Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -36,93 +38,137 @@
 
     <script type="module">
         import * as THREE from 'three';
-        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
         import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
-        let scene, camera, renderer, textMesh, particles;
+        // 1. Setup Scene, Camera, dan Renderer
+        const scene = new THREE.Scene();
+        
+        // Tambahkan kabut halus untuk kedalaman
+        scene.fog = new THREE.FogExp2(0x1a0b1c, 0.02);
 
-        init();
-        animate();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 30;
 
-        function init() {
-            // 1. Scene & Camera
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 15;
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
 
-            // 2. Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
+        // 2. Pencahayaan (Lighting)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
 
-            // 3. Lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-            const pointLight = new THREE.PointLight(0xff4d94, 2);
-            pointLight.position.set(10, 10, 10);
-            scene.add(pointLight);
+        const pointLight = new THREE.PointLight(0xff69b4, 2, 100); // Light Pink
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
 
-            // 4. Load Font & Create 3D Text
-            const loader = new FontLoader();
-            // Menggunakan font JSON gratis dari library Three.js
-            loader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
-                const geometry = new TextGeometry('I Love You\nPuteri Balqis', {
-                    font: font,
-                    size: 1.5,
-                    height: 0.5,
-                    curveSegments: 12,
-                    bevelEnabled: true,
-                    bevelThickness: 0.1,
-                    bevelSize: 0.1,
-                });
-                
-                geometry.center();
+        const pointLight2 = new THREE.PointLight(0x00ffff, 2, 100); // Light Blue/Cyan
+        pointLight2.position.set(-10, -10, 10);
+        scene.add(pointLight2);
 
-                const material = new THREE.MeshPhongMaterial({ 
-                    color: 0xff4d94, 
-                    specular: 0xffffff,
-                    shininess: 100 
-                });
-                
-                textMesh = new THREE.Mesh(geometry, material);
-                scene.add(textMesh);
+        // 3. Load Font dan Buat Teks
+        const loader = new FontLoader();
+        // Menggunakan font standar Helvetiker dari CDN
+        loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function (font) {
+
+            // Teks "I Love You"
+            const textGeo1 = new TextGeometry('I Love You', {
+                font: font,
+                size: 8,
+                height: 2,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.5,
+                bevelSize: 0.3,
+                bevelOffset: 0,
+                bevelSegments: 5
+            });
+            
+            textGeo1.center(); // Pusatkan teks
+            const material1 = new THREE.MeshPhongMaterial({ color: 0xff3366 }); // Pink tua
+            const textMesh1 = new THREE.Mesh(textGeo1, material1);
+            textMesh1.position.y = 5;
+            scene.add(textMesh1);
+
+            // Teks "Puteri Balqis"
+            const textGeo2 = new TextGeometry('Puteri Balqis', {
+                font: font,
+                size: 4,
+                height: 1,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.3,
+                bevelSize: 0.2,
+                bevelOffset: 0,
+                bevelSegments: 5
             });
 
-            // 5. Particles (Background Bintang/Hati)
-            const partGeo = new THREE.BufferGeometry();
-            const partCount = 1000;
-            const posArray = new Float32Array(partCount * 3);
+            textGeo2.center();
+            const material2 = new THREE.MeshPhongMaterial({ color: 0xffd700, specular: 0xffffff, shininess: 50 }); // Emas
+            const textMesh2 = new THREE.Mesh(textGeo2, material2);
+            textMesh2.position.y = -8;
+            scene.add(textMesh2);
 
-            for(let i=0; i < partCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 50;
+            // Hapus teks loading
+            document.getElementById('loading').style.opacity = 0;
+
+            // 4. Partikel Bintang/Kupu-kupu Cinta di sekitar
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 700;
+            const posArray = new Float32Array(particlesCount * 3);
+
+            for(let i = 0; i < particlesCount * 3; i++) {
+                // Sebarkan partikel secara acak di area 3D
+                posArray[i] = (Math.random() - 0.5) * 100;
             }
 
-            partGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const partMat = new THREE.PointsMaterial({ size: 0.05, color: 0xffffff });
-            particles = new THREE.Points(partGeo, partMat);
-            scene.add(particles);
-        }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.2,
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8,
+            });
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
 
-        function animate() {
-            requestAnimationFrame(animate);
+            // 5. Animation Loop (Animasi Jalan Terus)
+            const clock = new THREE.Clock();
 
-            if (textMesh) {
-                // Animasi mengambang & rotasi halus
-                textMesh.rotation.y += 0.005;
-                textMesh.position.y = Math.sin(Date.now() * 0.002) * 0.5;
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+
+                // Animasi Rotasi Teks Utama
+                textMesh1.rotation.y = Math.sin(elapsedTime * 0.5) * 0.3;
+                textMesh1.rotation.x = Math.cos(elapsedTime * 0.3) * 0.1;
+                
+                textMesh2.rotation.y = Math.sin(elapsedTime * 0.5) * 0.3;
+                textMesh2.rotation.x = Math.cos(elapsedTime * 0.3) * 0.1;
+
+                // Efek Mengapung (Floating)
+                textMesh1.position.y = 5 + Math.sin(elapsedTime) * 1;
+                textMesh2.position.y = -8 + Math.sin(elapsedTime) * 1;
+
+                // Rotasi partikel perlahan
+                particlesMesh.rotation.y = elapsedTime * 0.05;
+                particlesMesh.rotation.x = -elapsedTime * 0.05;
+
+                // Update Renderer
+                renderer.render(scene, camera);
             }
 
-            particles.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        }
+            animate();
+        });
 
-        // Handle Resize
+        // Handle Resize Window
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
     </script>
 </body>
 </html>
